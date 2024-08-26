@@ -1,11 +1,11 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.\n
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.\n
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.\n
  *            See LICENSE.txt for details.
  */
-#ifndef KINETX_RUNGEKUTTA_H_
-#define KINETX_RUNGEKUTTA_H_
+#ifndef KINETX_INTEGRATOR_H_
+#define KINETX_INTEGRATOR_H_
 
 #include "Kinetx/Network.h"
 
@@ -14,13 +14,9 @@ namespace Kinetx {
 /**
  * @brief Base class for all Runge-Kutta methods/implementations
  */
-class RungeKutta {
+class Integrator {
  public:
-  /**
-   * @brief Constructor
-   * @param net The network of reactions.
-   */
-  RungeKutta(Network& net);
+  Integrator() = default;
 
   /**
    * @brief Propagate the numerical integration by one time step.
@@ -33,10 +29,10 @@ class RungeKutta {
    * @param dt The time increment. This may be updated inplace depending on the
    *           integration algorithm.
    */
-  void propagate(Eigen::VectorXd& concentrations, Eigen::VectorXd& yFlux, Eigen::VectorXd& rFlux,
-                 Eigen::VectorXd& rForwardFlux, Eigen::VectorXd& rBackwardFlux, double& t, double& dt) const;
+  virtual void propagate(Eigen::VectorXd& concentrations, Eigen::VectorXd& yFlux, Eigen::VectorXd& rFlux,
+                         Eigen::VectorXd& rForwardFlux, Eigen::VectorXd& rBackwardFlux, double& t, double& dt) const = 0;
   /**
-   * @brief Run the numerical integration.
+   * @brief Run the numerical integration until a maximum number of steps or convergence is reached.
    * @param y The input concentration.
    * @param tStart The start time.
    * @param dt The time increment.
@@ -49,15 +45,50 @@ class RungeKutta {
    * @return The final concentrations, max. concentrations, and vertex fluxes as a matrix with columns
    *   in this order.
    */
-  Eigen::MatrixXd runIntegration(Eigen::VectorXd y, double tStart, double dt, Eigen::VectorXd& rFlux,
-                                 Eigen::VectorXd& rForwardFlux, Eigen::VectorXd& rBackwardFlux,
-                                 const unsigned int batchInterval = 1000, const unsigned int nBatches = 100000,
-                                 const double convergenceConcentrationChange = 1e-10);
+  virtual Eigen::MatrixXd runIntegration(Eigen::VectorXd y, double tStart, double dt, Eigen::VectorXd& rFlux,
+                                         Eigen::VectorXd& rForwardFlux, Eigen::VectorXd& rBackwardFlux,
+                                         const unsigned int batchInterval = 1000, const unsigned int nBatches = 100000,
+                                         const double convergenceConcentrationChange = 1e-10) = 0;
+  /**
+   * @brief Run the numerical integration until a maximum time or convergence is reached.
+   * @param y The input concentration.
+   * @param tStart The start time.
+   * @param dt The time increment.
+   * @param rFlux The reaction edge flux (total).
+   * @param rForwardFlux The forward reaction edge flux.
+   * @param rBackwardFlux The backward reaction edge flux.
+   * @param tMax The final time to integrate to.
+   * @param batchInterval The number of steps per batch.
+   * @param convergenceConcentrationChange The concentration convergence threshold.
+   * @return The final concentrations, max. concentrations, and vertex fluxes as a matrix with columns
+   *   in this order.
+   */
+  virtual Eigen::MatrixXd runIntegrationByTime(Eigen::VectorXd y, double tStart, double dt, Eigen::VectorXd& rFlux,
+                                               Eigen::VectorXd& rForwardFlux, Eigen::VectorXd& rBackwardFlux,
+                                               const double tMax, const unsigned int batchInterval = 1000,
+                                               const double convergenceConcentrationChange = 1e-10) = 0;
+};
 
-  Eigen::MatrixXd runIntegrationByTime(Eigen::VectorXd y, double tStart, double dt, Eigen::VectorXd& rFlux,
-                                       Eigen::VectorXd& rForwardFlux, Eigen::VectorXd& rBackwardFlux, const double tMax,
-                                       const unsigned int batchInterval = 1000,
-                                       const double convergenceConcentrationChange = 1e-10);
+class IntegratorBase : public Integrator {
+ public:
+  /**
+   * @brief Constructor
+   * @param net The network of reactions.
+   */
+  IntegratorBase(Network& net);
+
+  virtual void propagate(Eigen::VectorXd& concentrations, Eigen::VectorXd& yFlux, Eigen::VectorXd& rFlux,
+                         Eigen::VectorXd& rForwardFlux, Eigen::VectorXd& rBackwardFlux, double& t, double& dt) const = 0;
+
+  virtual Eigen::MatrixXd runIntegration(Eigen::VectorXd y, double tStart, double dt, Eigen::VectorXd& rFlux,
+                                         Eigen::VectorXd& rForwardFlux, Eigen::VectorXd& rBackwardFlux,
+                                         const unsigned int batchInterval = 1000, const unsigned int nBatches = 100000,
+                                         const double convergenceConcentrationChange = 1e-10);
+
+  virtual Eigen::MatrixXd runIntegrationByTime(Eigen::VectorXd y, double tStart, double dt, Eigen::VectorXd& rFlux,
+                                               Eigen::VectorXd& rForwardFlux, Eigen::VectorXd& rBackwardFlux,
+                                               const double tMax, const unsigned int batchInterval = 1000,
+                                               const double convergenceConcentrationChange = 1e-10);
 
  protected:
   /**
@@ -73,13 +104,6 @@ class RungeKutta {
   void trackVertexAndEdgeFluxes(const Eigen::VectorXd& y, const Eigen::VectorXd& yInitial, Eigen::VectorXd& yFlux,
                                 Eigen::VectorXd& rFlux, Eigen::VectorXd& rForwardFlux, Eigen::VectorXd& rBackwardFlux,
                                 const double& dt) const;
-  /**
-   * @brief Propagte the concentration.
-   * @param concentrations The concentration.
-   * @param t The current time.
-   * @param dt The time increment.
-   */
-  virtual void propagateY(Eigen::VectorXd& concentrations, double& t, double& dt) const = 0;
   /**
    * @brief Calculate the concentration gradient.
    * @param concentrations The current concentration.
@@ -133,9 +157,29 @@ class RungeKutta {
   bool printTimeAndCheckConvergenceStep(const Eigen::VectorXd& y, const Eigen::VectorXd& yOld, Eigen::VectorXd& yMax,
                                         const unsigned int batchInterval, const unsigned int iBatch, const double dt,
                                         const double t, const double convergenceConcentrationChange);
+
+  static double fast_pow(const double& x, const int& n) {
+    if (n == 0) {
+      return 1.0;
+    }
+    if (n == 1) {
+      return x;
+    }
+    if (n == 2) {
+      return x * x;
+    }
+    if (n == 3) {
+      return x * x * x;
+    }
+    if (n == 4) {
+      const double tmp = x * x;
+      return tmp * tmp;
+    }
+    return std::pow(x, n);
+  }
 };
 
 } /* namespace Kinetx */
 } /* namespace Scine */
 
-#endif // KINETX_RUNGEKUTTA_H_
+#endif // KINETX_INTEGRATOR_H_

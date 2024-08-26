@@ -1,14 +1,15 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.\n
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.\n
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.\n
  *            See LICENSE.txt for details.
  */
 
+#include "Kinetx/Integrator/CashKarp5.h"
+#include "Kinetx/Integrator/ImplicitEuler.h"
 #include "Kinetx/Network.h"
-#include "Kinetx/RungeKutta/CashKarp5.h"
-#include "Kinetx/RungeKutta/ImplicitEuler.h"
 //#include "Kinetx/RandomNetworkFactory.h"
+#include "Kinetx/Integrator/Cvode.h"
 #include "Kinetx/ReferenceNetworks.h"
 #include <gmock/gmock.h>
 

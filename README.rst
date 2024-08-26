@@ -42,7 +42,14 @@ release as archived on Zenodo (please use the DOI of the respective release).
 In addition, we kindly request you to cite the following articles when using KiNetX:
 
 - \J. Proppe, M. Reiher, "Mechanism Deduction from Noisy Chemical Reaction Networks", *J. Chem. Theory Comput.*, **2019**, *15*, 357.
-- \M. Bensberg, M. Reiher, "Concentration-Flux-Steered Mechanism Exploration with an Organocatalysis Application", *arXiv:2212.14135 [physics.chem-ph]*, **2022**.
+- \M. Bensberg, M. Reiher, "Concentration-Flux-Steered Mechanism Exploration with an Organocatalysis Application", *Isr. J. Chem.*, **2022**, *63*, e202200123.
+
+Furthermore, when publishing results obtained with any SCINE module, please cite the following paper:
+
+T. Weymuth, J. P. Unsleber, P. L. Türtscher, M. Steiner, J.-G. Sobez, C. H. Müller, M. Mörchen,
+V. Klasovita, S. A. Grimmel, M. Eckhoff, K.-S. Csizi, F. Bosia, M. Bensberg, M. Reiher,
+"SCINE—Software for chemical interaction networks", *J. Chem. Phys.*, **2024**, *160*, 222501
+(DOI `10.1063/5.0206974 <https://doi.org/10.1063/5.0206974>`_).
 
 Support and Contact
 -------------------

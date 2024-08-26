@@ -1,6 +1,6 @@
 __copyright__ = """This file is part of SCINE Kinetx.
 This code is licensed under the 3-clause BSD license.
-Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
 See LICENSE.txt for details.
 """
 
@@ -9,7 +9,7 @@ from dev.conan.base import ScineConan
 
 class ScineKinetxConan(ScineConan):
     name = "scine_kinetx"
-    version = "2.0.0"
+    version = "3.0.0"
     url = "https://github.com/qcscine/kinetx"
     description = """ """
     options = {
@@ -29,7 +29,7 @@ class ScineKinetxConan(ScineConan):
     requires = ["eigen/[~=3.3.7]"]
     cmake_name = "Kinetx"
     cmake_definitions = {
-        "CMAKE_UNITY_BUILD": "ON",
+        "CMAKE_UNITY_BUILD": "OFF",
         "CMAKE_UNITY_BUILD_BATCH_SIZE": 16
     }
 

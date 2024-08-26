@@ -1,15 +1,16 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.\n
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.\n
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.\n
  *            See LICENSE.txt for details.
  */
 
 /* Include Internal Headers */
-#include <Kinetx/RungeKutta/CashKarp5.h>     // numerical integration scheme.
-#include <Kinetx/RungeKutta/ExplicitEuler.h> // numerical integration scheme.
-#include <Kinetx/RungeKutta/ImplicitEuler.h> // numerical integration scheme.
-#include <Kinetx/RungeKutta/RungeKutta.h>    // base class for the numerical integration.
+#include <Kinetx/Integrator/CashKarp5.h>     // numerical integration scheme.
+#include <Kinetx/Integrator/Cvode.h>         // numerical integration scheme.
+#include <Kinetx/Integrator/ExplicitEuler.h> // numerical integration scheme.
+#include <Kinetx/Integrator/ImplicitEuler.h> // numerical integration scheme.
+#include <Kinetx/Integrator/Integrator.h>    // base class for the numerical integration.
 /* Include Std and External Headers */
 #include <pybind11/eigen.h>    // bind eigen3 objects.
 #include <pybind11/pybind11.h> // python bindings.
@@ -22,7 +23,7 @@ using namespace Scine::Kinetx;
 /**
  * @brief Enum class for the different numerical integration schemes.
  */
-enum class IntegratorName { CashKarp5, ExplicitEuler, ImplicitEuler };
+enum class IntegratorName { CashKarp5, ExplicitEuler, ImplicitEuler, CvodeBdf };
 
 /**
  * @brief A helper function to integrate the rate equations of a given reaction network in a batch-wise fashion.
@@ -48,7 +49,7 @@ integrateDifferentialEquations(Network& network, std::vector<double> yStart, con
                                const IntegratorName integratorName, const unsigned int batchInterval = 1000,
                                const unsigned int nBatches = 100000, const double convergenceConcentrationChange = 1e-10,
                                bool integrateByTime = false, double maxTime = 1e+5) {
-  std::unique_ptr<RungeKutta> integrator;
+  std::unique_ptr<Integrator> integrator;
   switch (integratorName) {
     case IntegratorName::CashKarp5:
       integrator = std::make_unique<CashKarp5>(network);
@@ -58,6 +59,9 @@ integrateDifferentialEquations(Network& network, std::vector<double> yStart, con
       break;
     case IntegratorName::ImplicitEuler:
       integrator = std::make_unique<ImplicitEuler>(network);
+      break;
+    case IntegratorName::CvodeBdf:
+      integrator = std::make_unique<Cvode>(network);
       break;
   }
   Eigen::VectorXd y = Eigen::Map<Eigen::VectorXd>(yStart.data(), yStart.size());
@@ -89,6 +93,9 @@ IntegratorName resolveIntegratorName(std::string integrator) {
   else if (integrator == "implicit_euler") {
     return IntegratorName::ImplicitEuler;
   }
+  else if (integrator == "cvode_bdf") {
+    return IntegratorName::CvodeBdf;
+  }
   throw std::runtime_error("The selected integrator is unknown.");
 }
 
@@ -100,7 +107,8 @@ void init_numerical_integration(pybind11::module& m) {
   pybind11::enum_<IntegratorName> integratorNames(m, "Integrator");
   integratorNames.value("cash_karp_5", IntegratorName::CashKarp5)
       .value("explicit_euler", IntegratorName::ExplicitEuler)
-      .value("implicit_euler", IntegratorName::ImplicitEuler);
+      .value("implicit_euler", IntegratorName::ImplicitEuler)
+      .value("cvode_bdf", IntegratorName::CvodeBdf);
 
   m.def("get_integrator", &resolveIntegratorName, pybind11::arg("integrator"),
         R"delim(

@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.\n
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.\n
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.\n
  *            See LICENSE.txt for details.
  */
 
@@ -10,6 +10,7 @@
 /* Include Std and External Headers */
 #include <pybind11/eigen.h>    // bind eigen3 objects.
 #include <pybind11/pybind11.h> // python bindings.
+#include <pybind11/stl.h>
 
 using namespace Scine::Kinetx;
 

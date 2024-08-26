@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Release 3.0.0
+-------------
+
+- Update address in license
+- Interface Sundials and add CVODE-BDF integrator
+
 Release 2.0.0
 -------------
 

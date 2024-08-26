@@ -26,10 +26,35 @@ target_compile_definitions(Kinetx
 )
 include(AddEigen)
 add_eigen(Kinetx PUBLIC)
-target_link_libraries(Kinetx
-  PRIVATE
-    $<$<BOOL:${OpenMP_CXX_FOUND}>:OpenMP::OpenMP_CXX>
+include(ImportSundials)
+import_sundials()
+
+target_link_libraries(Kinetx PRIVATE
+  $<$<BOOL:${OpenMP_CXX_FOUND}>:OpenMP::OpenMP_CXX>
+  sundials_cvode
+  sundials_sunmatrixdense
+  sundials_sunmatrixsparse
+  sundials_sunnonlinsolnewton
+  sundials_sunnonlinsolfixedpoint
 )
+target_include_directories(Kinetx PRIVATE
+  ${sundials_SOURCE_DIR}/include
+)
+if(SCINE_PARALLELIZE)
+  target_link_libraries(Kinetx PRIVATE    
+    sundials_nvecopenmp
+  )
+  target_include_directories(Kinetx PRIVATE
+    sundials_nvecopenmp
+  )
+else()
+  target_link_libraries(Kinetx PRIVATE
+    sundials_nvecserial
+  )
+  target_include_directories(Kinetx PRIVATE
+    sundials_nvecserial
+  )
+endif()
 
 # Add namespaced aliases
 add_library(Scine::Kinetx ALIAS Kinetx)
@@ -68,19 +93,6 @@ if(SCINE_BUILD_TESTS)
     ${CMAKE_DL_LIBS}
   )
   add_test(NAME Kinetx COMMAND Kinetx_tests)
-
-  # # App tests
-  # find_package(PythonInterp REQUIRED)
-  # add_test(
-  #   NAME Sparrow_App
-  #   COMMAND ${PYTHON_EXECUTABLE} -B -m pytest test_sparrow.py${TEST_SELECTION} --junitxml=${CMAKE_CURRENT_BINARY_DIR}/app_report.xml
-  #   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AppTests
-  # )
-  # set_tests_properties(Sparrow_App PROPERTIES
-  #   ENVIRONMENT SCINE_MODULE_PATH=${CMAKE_CURRENT_BINARY_DIR}:$ENV{SCINE_MODULE_PATH}
-  #   ENVIRONMENT PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}:$ENV{PYTHONPATH}
-  #   ENVIRONMENT PATH=${CMAKE_CURRENT_BINARY_DIR}:$ENV{PATH}
-  # )
 endif()
 
 # Set the RPATH to be used when installing.
@@ -166,7 +178,7 @@ if(SCINE_BUILD_PYTHON_BINDINGS)
   if(SCINE_BUILD_TESTS)
     add_test(
       NAME Kinetx_Python_Bindings
-      COMMAND ${PYTHON_EXECUTABLE} -B -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/Python/Tests --junitxml=${CMAKE_CURRENT_BINARY_DIR}/pytest_report.xml
+      COMMAND ${PYTHON_EXECUTABLE} -B -m pytest -s ${CMAKE_CURRENT_SOURCE_DIR}/Python/Tests --junitxml=${CMAKE_CURRENT_BINARY_DIR}/pytest_report.xml
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
     set_tests_properties(Kinetx_Python_Bindings PROPERTIES

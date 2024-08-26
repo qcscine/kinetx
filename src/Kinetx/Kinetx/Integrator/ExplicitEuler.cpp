@@ -1,11 +1,11 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.\n
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.\n
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.\n
  *            See LICENSE.txt for details.
  */
 
-#include "Kinetx/RungeKutta/ExplicitEuler.h"
+#include "Kinetx/Integrator/ExplicitEuler.h"
 #include <Eigen/Dense>
 
 namespace Scine {
