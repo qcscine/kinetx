@@ -15,8 +15,28 @@ namespace Kinetx {
 namespace Tests {
 
 TEST(NetworkBuilderTest, Constructor) {
-  NetworkBuilder builder();
+  NetworkBuilder builder;
   ASSERT_TRUE(true);
+}
+
+TEST(NetworkBuilderTest, addReaction) {
+  const double dummyRateConstant = 1.0;
+  NetworkBuilder networkBuilder;
+  networkBuilder.reserve(3, 1, 1);
+  networkBuilder.addReaction({dummyRateConstant}, {dummyRateConstant}, {{0, 1}, {0, 1}}, {{1, 1}, {2, 1}});
+  const auto forwardS1 = networkBuilder.getStoichiometryForward();
+  const auto backwardS1 = networkBuilder.getStoichiometryBackward();
+
+  NetworkBuilder networkBuilder2;
+  networkBuilder2.reserve(3, 1, 1);
+  networkBuilder2.addReaction({dummyRateConstant}, {dummyRateConstant}, {{0, 2}}, {{1, 1}, {2, 1}});
+  const auto forwardS2 = networkBuilder2.getStoichiometryForward();
+  const auto backwardS2 = networkBuilder2.getStoichiometryBackward();
+
+  const int diffForward = Eigen::MatrixXi(forwardS1 - forwardS2).array().abs().maxCoeff();
+  const int diffBackward = Eigen::MatrixXi(backwardS1 - backwardS2).array().abs().maxCoeff();
+  EXPECT_EQ(diffForward, 0);
+  EXPECT_EQ(diffBackward, 0);
 }
 
 TEST(NetworkBuilderTest, constructNetwork) {

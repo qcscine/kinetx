@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Release 3.1.0
+-------------
+
+- Compounds may now be present more than once when constructing the kinetic model with the NetworkBuilder.
+  The stoichiometries are then summed up accordingly.
+
 Release 3.0.0
 -------------
 

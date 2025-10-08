@@ -70,16 +70,15 @@ void NetworkBuilder::addReaction(std::vector<double> rfs, std::vector<double> rb
     _ratesForward.conservativeResize(_ratesForward.rows(), rfs.size());
     _ratesBackward.conservativeResize(_ratesBackward.rows(), rfs.size());
   }
-  // TODO: I replaced _nReactions + 1  by _nReactions. I do not understand why it was like this before...
   // Add data
   //  - Add Stoichiometry
-  for (const auto& c : lhs) {
+  for (const auto& c : sumStoichiometries(lhs)) {
     if (c.first > _nCompounds - 1) {
       throw std::runtime_error("Network Builder: Reaction to be added references non existing compound.");
     }
     _stoichiometryForward.insert(_nReactions, c.first) = c.second;
   }
-  for (const auto& c : rhs) {
+  for (const auto& c : sumStoichiometries(rhs)) {
     if (c.first > _nCompounds - 1) {
       throw std::runtime_error("Network Builder: Reaction to be added references non existing compound.");
     }
@@ -120,6 +119,29 @@ void NetworkBuilder::addCompound(double mass, std::string label) {
   _masses[_nCompounds] = mass;
   _labels[_nCompounds] = label;
   _nCompounds++;
+}
+
+std::map<unsigned int, unsigned int>
+NetworkBuilder::sumStoichiometries(const std::vector<std::pair<unsigned int, int>>& stoichiometries) const {
+  std::map<unsigned int, unsigned int> sum;
+  for (const auto& c : stoichiometries) {
+    auto iter = sum.find(c.first);
+    if (iter == sum.end()) {
+      sum.insert(std::make_pair(c.first, c.second));
+    }
+    else {
+      iter->second += c.second;
+    }
+  }
+  return sum;
+}
+
+const Eigen::SparseMatrix<int>& NetworkBuilder::getStoichiometryForward() const {
+  return _stoichiometryForward;
+}
+
+const Eigen::SparseMatrix<int>& NetworkBuilder::getStoichiometryBackward() const {
+  return _stoichiometryBackward;
 }
 
 } /* namespace Kinetx */

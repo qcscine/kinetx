@@ -66,7 +66,19 @@ class NetworkBuilder {
    */
   void addCompound(double mass, std::string label = "");
 
+  /**
+   * @brief Getter for the forward stoichiometry.
+   * @return The forward stoichiometry.
+   */
+  const Eigen::SparseMatrix<int>& getStoichiometryForward() const;
+  /**
+   * @brief Getter for the backward stoichiometry.
+   * @return The forward stoichiometry.
+   */
+  const Eigen::SparseMatrix<int>& getStoichiometryBackward() const;
+
  private:
+  std::map<unsigned int, unsigned int> sumStoichiometries(const std::vector<std::pair<unsigned int, int>>& stoichiometries) const;
   unsigned int _nCompounds = 0;
   unsigned int _nReactions = 0;
   unsigned int _nChannels = 0;
